@@ -1,0 +1,22 @@
+version: "3.4"
+
+services:
+  php:
+    build:
+      target: symfony_php_dev
+    volumes:
+      - ./:/srv/symfony:rw,cached
+      - ./docker/php/conf.d/symfony.dev.ini:/usr/local/etc/php/conf.d/symfony.dev.ini:ro
+      # If you develop on Linux, you may use a bind-mounted host directory instead
+      - ./var:/srv/symfony/var:rw
+      # If you develop on Mac or Windows you can remove the vendor/ directory
+      #  from the bind-mount for better performance by enabling the next line:
+      - /srv/symfony/vendor
+    extra_hosts:
+      # Ensure that host.docker.internal is correctly defined on Linux
+      - host.docker.internal:host-gateway
+
+  caddy:
+    volumes:
+      - ./public:/srv/symfony/public:ro
+      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro

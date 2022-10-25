@@ -1,0 +1,12 @@
+scheduler_bundle:
+    transport:
+        dsn: 'doctrine://default?execution_mode=first_in_first_out'
+    tasks:
+        app_update_fonts:
+            type: 'command'
+            command: 'app:update-fonts'
+            expression: '0 */2 * * *'
+        app_delete_expired_files:
+            type: 'command'
+            command: 'app:delete-expired-files'
+            expression: '0 * * * *'
