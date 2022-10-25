@@ -1,3 +1,16 @@
 controllers:
     resource: ../src/Controller/
     type: attribute
+
+# TODO: Create a controller for the homepage
+app_home:
+    path: /
+    controller: Symfony\Bundle\FrameworkBundle\Controller\RedirectController
+    defaults:
+        path: "https://github.com/orgrosua/wakufont"
+        # add this to keep the original query string parameters when redirecting
+        keepQueryParams: true
+        # add this to keep the HTTP method when redirecting. The redirect status changes
+        # * for temporary redirects, it uses the 307 status code instead of 302
+        # * for permanent redirects, it uses the 308 status code instead of 301
+        keepRequestMethod: true
