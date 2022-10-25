@@ -6,3 +6,4 @@ services:
     environment:
       APP_SECRET: ${APP_SECRET}
       SENTRY_DSN: ${SENTRY_DSN}
+      CF_API_TOKEN: ${CF_API_TOKEN}
