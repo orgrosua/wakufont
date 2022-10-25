@@ -129,7 +129,7 @@ RUN rm -f .env.local.php
 # depends on the "php" stage above
 FROM caddy:${CADDY_VERSION}-builder-alpine AS symfony_caddy_builder
 
-# install Mercure and Vulcain modules
+# install required modules for Caddy
 RUN xcaddy build \
     --with github.com/caddy-dns/cloudflare
 
