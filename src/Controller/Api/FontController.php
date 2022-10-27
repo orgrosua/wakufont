@@ -19,7 +19,7 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/api/fonts', name: 'api_font_')]
 class FontController extends AbstractController
 {
-    #[Route('/', name: 'index')]
+    #[Route('', name: 'index')]
     public function index(Request $request, FontRepository $fontRepository): JsonResponse
     {
         $criteria = new Criteria();
@@ -42,11 +42,20 @@ class FontController extends AbstractController
         /** @var Font[] $fonts */
         $fonts = $fontRepository->matching($criteria);
 
-        return $this->json([
+        $response = $this->json([
             'fonts' => $fonts,
         ], 200, [], [
             'groups' => ['font:read'],
         ]);
+
+        // cache publicly for 3600 seconds
+        $response->setPublic();
+        $response->setMaxAge(3600);
+    
+        // (optional) set a custom Cache-Control directive
+        $response->headers->addCacheControlDirective('must-revalidate', true);
+    
+        return $response;
     }
 
     #[Route('/{slug}', name: 'show')]
@@ -184,11 +193,20 @@ class FontController extends AbstractController
             }
         });
 
-        return $this->json([
+        $response = $this->json([
             'font' => $font,
             'files' => $filteredFontFiles,
         ], 200, [], [
             'groups' => ['font:read', 'file:read'],
         ]);
+
+        // cache publicly for 3600 seconds
+        $response->setPublic();
+        $response->setMaxAge(3600);
+    
+        // (optional) set a custom Cache-Control directive
+        $response->headers->addCacheControlDirective('must-revalidate', true);
+    
+        return $response;
     }
 }
