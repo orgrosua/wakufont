@@ -13,18 +13,17 @@
         "guikingone/scheduler-bundle": "^0.10.0",
         "nelmio/cors-bundle": "^2.2",
         "sabberworm/php-css-parser": "^8.4",
-        "sensio/framework-extra-bundle": "^6.2",
         "sentry/sentry-symfony": "^4.4",
-        "symfony/console": "6.1.*",
-        "symfony/dotenv": "6.1.*",
+        "symfony/console": "6.2.*",
+        "symfony/dotenv": "6.2.*",
         "symfony/flex": "^2",
-        "symfony/framework-bundle": "6.1.*",
-        "symfony/http-client": "6.1.*",
-        "symfony/proxy-manager-bridge": "6.1.*",
-        "symfony/runtime": "6.1.*",
-        "symfony/serializer": "6.1.*",
+        "symfony/framework-bundle": "6.2.*",
+        "symfony/http-client": "6.2.*",
+        "symfony/proxy-manager-bridge": "6.2.*",
+        "symfony/runtime": "6.2.*",
+        "symfony/serializer": "6.2.*",
         "symfony/translation-contracts": "^3.1",
-        "symfony/yaml": "6.1.*"
+        "symfony/yaml": "6.2.*"
     },
     "config": {
         "allow-plugins": {
@@ -78,11 +77,11 @@
     "extra": {
         "symfony": {
             "allow-contrib": false,
-            "require": "6.1.*"
+            "require": "6.2.*"
         }
     },
     "require-dev": {
         "symfony/maker-bundle": "^1.47",
-        "symfony/stopwatch": "6.1.*"
+        "symfony/stopwatch": "6.2.*"
     }
 }
