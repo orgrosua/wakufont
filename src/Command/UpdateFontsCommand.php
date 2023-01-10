@@ -23,7 +23,7 @@ class UpdateFontsCommand extends Command
 {
     private readonly AsciiSlugger $slugger;
 
-    private array $webfontVariants = [];
+    private array $webfont = [];
 
     public function __construct(
         private readonly HttpClientInterface $client,
@@ -60,7 +60,7 @@ class UpdateFontsCommand extends Command
         $metadataFonts = $content->familyMetadataList;
 
         try {
-            $this->webfontVariants = $this->webfontVariants();
+            $this->webfont = $this->fetchWebfont();
         } catch (\Throwable $th) {
             $io->error($th->getMessage());
             return Command::FAILURE;
@@ -106,9 +106,9 @@ class UpdateFontsCommand extends Command
     /**
      * @throws Exception
      */
-    private function webfontVariants(): array
+    private function fetchWebfont(): array
     {
-        $variants = [];
+        $items = [];
 
         $response = $this->client->request('GET', "https://www.googleapis.com/webfonts/v1/webfonts?sort=popularity&key={$this->webfontApiKey}");
 
@@ -118,10 +118,8 @@ class UpdateFontsCommand extends Command
 
         $content = json_decode($response->getContent(), null, 512, JSON_THROW_ON_ERROR);
 
-        $variants = [];
-
         foreach ($content->items as $item) {
-            $variants[$item->family] = array_map(function ($v) {
+            $item->variants = array_map(function ($v) {
                 if ($v === 'regular') {
                     return '400';
                 } elseif ($v === 'italic') {
@@ -132,9 +130,11 @@ class UpdateFontsCommand extends Command
 
                 return $v;
             }, $item->variants);
+
+            $items[$item->family] = $item;
         }
 
-        return $variants;
+        return $items;
     }
 
     private function fillFont(Font &$font, $metadataFont)
@@ -142,7 +142,7 @@ class UpdateFontsCommand extends Command
         $variants = [];
 
         foreach ($metadataFont->fonts as $k => $v) {
-            if (! in_array($k, $this->webfontVariants[$metadataFont->family], true)) {
+            if (! in_array($k, $this->webfont[$metadataFont->family]->variants, true)) {
                 continue;
             }
             $variants[] = $k;
@@ -160,5 +160,6 @@ class UpdateFontsCommand extends Command
         $font->setVariants($variants);
         $font->setUpdatedAt(new \DateTimeImmutable());
         $font->setPopularity($metadataFont->popularity);
+        $font->setVersion($this->webfont[$metadataFont->family]->version);
     }
 }
