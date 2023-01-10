@@ -1,14 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Command;
 
 use App\Entity\Font;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\String\Slugger\AsciiSlugger;
@@ -20,11 +20,11 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 )]
 class UpdateFontsCommand extends Command
 {
-    private AsciiSlugger $slugger;
+    private readonly AsciiSlugger $slugger;
 
     public function __construct(
-        private HttpClientInterface $client,
-        private ManagerRegistry $doctrine
+        private readonly HttpClientInterface $client,
+        private readonly ManagerRegistry $doctrine
     ) {
         parent::__construct();
 
@@ -51,19 +51,21 @@ class UpdateFontsCommand extends Command
             return Command::FAILURE;
         }
 
-        $content = json_decode($response->getContent());
+        $content = json_decode($response->getContent(), null, 512, JSON_THROW_ON_ERROR);
 
         $metadataFonts = $content->familyMetadataList;
 
-        $io->info('Found ' . count($metadataFonts) . ' fonts. Updating database...');
+        $io->info('Found ' . (is_countable($metadataFonts) ? count($metadataFonts) : 0) . ' fonts. Updating database...');
 
         foreach ($metadataFonts as $metadataFont) {
             $io->writeln('Font: ' . $metadataFont->family);
 
             /** @var Font|null $font */
-            $font = $repository->findOneBy(['slug' => $this->slugger->slug($metadataFont->family)]);
+            $font = $repository->findOneBy([
+                'slug' => $this->slugger->slug($metadataFont->family),
+            ]);
 
-            if (!$font) {
+            if (! $font) {
                 $io->writeln('Missing ❌');
                 $io->writeln('Creating new one...');
                 $font = new Font();

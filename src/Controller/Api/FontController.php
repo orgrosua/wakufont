@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Controller\Api;
 
 use App\Entity\Enum\FontFormat;
@@ -10,7 +12,7 @@ use App\Repository\FontRepository;
 use App\Service\GoogleFonts;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\Persistence\ManagerRegistry;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
+use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -37,7 +39,9 @@ class FontController extends AbstractController
             default => 'ASC',
         };
 
-        $criteria->orderBy([$sort => $order]);
+        $criteria->orderBy([
+            $sort => $order,
+        ]);
 
         /** @var Font[] $fonts */
         $fonts = $fontRepository->matching($criteria);
@@ -51,22 +55,24 @@ class FontController extends AbstractController
         // cache publicly for 3600 seconds
         $response->setPublic();
         $response->setMaxAge(3600);
-    
+
         // (optional) set a custom Cache-Control directive
         $response->headers->addCacheControlDirective('must-revalidate', true);
-    
+
         return $response;
     }
 
     #[Route('/{slug}', name: 'show')]
-    #[ParamConverter('font', options: ['mapping' => ['slug' => 'slug']])]
+    #[MapEntity(mapping: [
+        'slug' => 'slug',
+    ], class: Font::class)]
     public function font(Font $font, ManagerRegistry $doctrine, Request $request, FileRepository $fileRepository, GoogleFonts $googleFonts): JsonResponse
     {
         $entityManager = $doctrine->getManager();
 
         $subsets = $request->query->get('subsets', null);
 
-        if (!$subsets) {
+        if (! $subsets) {
             $subsets = in_array('latin', $font->getSubsets(), true)
                 ? ['latin']
                 : [$font->getSubsets()[0]];
@@ -88,7 +94,7 @@ class FontController extends AbstractController
             foreach ($fontFormats as $fontFormat) {
                 $isExistFontFilesVariant = $fontFiles->exists(static function (int $k, File $fontFile) use ($variantKey, $fontFormat, $subsets) {
                     $weight = intval($variantKey);
-                    $style = match (preg_replace('/\d/', '', $variantKey)) {
+                    $style = match (preg_replace('/\d/', '', (string) $variantKey)) {
                         'i' => 'italic',
                         'o' => 'oblique',
                         default => 'normal',
@@ -103,14 +109,14 @@ class FontController extends AbstractController
                         && $fontFileSubsets === $subsets;
                 });
 
-                if (!$isExistFontFilesVariant) {
+                if (! $isExistFontFilesVariant) {
                     $fontUrl = $googleFonts->fetchFontFile($font, $fontFormat->value, $variantKey, $subsets);
 
                     $newFontFile = new File();
 
                     $newFontFile->setFormat($fontFormat->value);
                     $newFontFile->setWeight(intval($variantKey));
-                    $newFontFile->setStyle(match (preg_replace('/\d/', '', $variantKey)) {
+                    $newFontFile->setStyle(match (preg_replace('/\d/', '', (string) $variantKey)) {
                         'i' => 'italic',
                         'o' => 'oblique',
                         default => 'normal',
@@ -127,13 +133,13 @@ class FontController extends AbstractController
         if ($font->getIsSupportVariable()) {
             $italics = [];
 
-            $wghtAxes = $font->getAxes()[array_search('wght', array_column($font->getAxes(), 'tag'))];
+            $wghtAxes = $font->getAxes()[array_search('wght', array_column($font->getAxes(), 'tag'), true)];
 
-            if (0 < count(array_filter($variantKeys, static fn (string $variantKey) => preg_replace('/\d/', '', $variantKey) === ''))) {
+            if (count(array_filter($variantKeys, static fn (string $variantKey) => preg_replace('/\d/', '', $variantKey) === '')) > 0) {
                 array_push($italics, 0);
             }
 
-            if (0 < count(array_filter($variantKeys, static fn (string $variantKey) => preg_replace('/\d/', '', $variantKey) === 'i'))) {
+            if (count(array_filter($variantKeys, static fn (string $variantKey) => preg_replace('/\d/', '', $variantKey) === 'i')) > 0) {
                 array_push($italics, 1);
             }
 
@@ -144,25 +150,21 @@ class FontController extends AbstractController
                     default => 'normal',
                 };
 
-                $filteredFontFilesVariable = $fontFiles->filter(static function (File $fontFile) use ($style, $subsets) {
-                    return $fontFile->getFormat() === FontFormat::WOFF2->value
-                        && $fontFile->getWeight() === 0
-                        && $fontFile->getStyle() === $style
-                        && in_array($fontFile->getSubsets()[0], $subsets, true);
-                });
+                $filteredFontFilesVariable = $fontFiles->filter(static fn (File $fontFile) => $fontFile->getFormat() === FontFormat::WOFF2->value
+                    && $fontFile->getWeight() === 0
+                    && $fontFile->getStyle() === $style
+                    && in_array($fontFile->getSubsets()[0], $subsets, true));
 
                 if ($filteredFontFilesVariable->count() < count($subsets)) {
                     $fetchedVariableFonts = $googleFonts->fetchVariableFontFile($font, $italic, $wghtAxes);
 
                     foreach ($fetchedVariableFonts as $fetchedVariableFont) {
-                        $existFilteredFontFilesVariable = $filteredFontFilesVariable->exists(static function (int $k, File $fontFile) use ($style, $fetchedVariableFont) {
-                            return $fontFile->getFormat() === FontFormat::WOFF2->value
-                                && $fontFile->getWeight() === 0
-                                && $fontFile->getStyle() === $style
-                                && in_array($fetchedVariableFont['subset'], $fontFile->getSubsets(), true);
-                        });
+                        $existFilteredFontFilesVariable = $filteredFontFilesVariable->exists(static fn (int $k, File $fontFile) => $fontFile->getFormat() === FontFormat::WOFF2->value
+                            && $fontFile->getWeight() === 0
+                            && $fontFile->getStyle() === $style
+                            && in_array($fetchedVariableFont['subset'], $fontFile->getSubsets(), true));
 
-                        if (!$existFilteredFontFilesVariable) {
+                        if (! $existFilteredFontFilesVariable) {
                             $newFontFile = new File();
 
                             $newFontFile->setFormat(FontFormat::WOFF2->value);
@@ -187,10 +189,9 @@ class FontController extends AbstractController
             sort($fontFileSubsets);
 
             if ($fontFile->getWeight() === 0) {
-                return in_array($fontFile->getSubsets()[0], $subsets);
-            } else {
-                return $fontFileSubsets === $subsets;
+                return in_array($fontFile->getSubsets()[0], $subsets, true);
             }
+            return $fontFileSubsets === $subsets;
         });
 
         $response = $this->json([
@@ -203,10 +204,10 @@ class FontController extends AbstractController
         // cache publicly for 3600 seconds
         $response->setPublic();
         $response->setMaxAge(3600);
-    
+
         // (optional) set a custom Cache-Control directive
         $response->headers->addCacheControlDirective('must-revalidate', true);
-    
+
         return $response;
     }
 }
