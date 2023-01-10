@@ -69,6 +69,9 @@ class Font
     #[ORM\OneToMany(mappedBy: 'font', targetEntity: File::class, orphanRemoval: true)]
     private Collection $files;
 
+    #[ORM\Column(length: 12, nullable: true)]
+    private ?string $version = null;
+
     public function __construct()
     {
         $this->files = new ArrayCollection();
@@ -257,5 +260,17 @@ class Font
     public function getIsSupportVariable(): bool
     {
         return ! empty($this->getAxes()) && array_search('wght', array_column($this->getAxes(), 'tag'), true) !== false;
+    }
+
+    public function getVersion(): ?string
+    {
+        return $this->version;
+    }
+
+    public function setVersion(string $version): self
+    {
+        $this->version = $version;
+
+        return $this;
     }
 }
