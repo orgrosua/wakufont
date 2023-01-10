@@ -63,11 +63,16 @@ class FontController extends AbstractController
     }
 
     #[Route('/{slug}', name: 'show')]
-    #[MapEntity(mapping: [
-        'slug' => 'slug',
-    ], class: Font::class)]
-    public function font(Font $font, ManagerRegistry $doctrine, Request $request, FileRepository $fileRepository, GoogleFonts $googleFonts): JsonResponse
-    {
+    public function font(
+        #[MapEntity(mapping: [
+            'slug' => 'slug',
+        ], class: Font::class)]
+        Font $font,
+        ManagerRegistry $doctrine,
+        Request $request,
+        FileRepository $fileRepository,
+        GoogleFonts $googleFonts
+    ): JsonResponse {
         $entityManager = $doctrine->getManager();
 
         $subsets = $request->query->get('subsets', null);
