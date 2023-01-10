@@ -6,6 +6,7 @@ namespace App\Command;
 
 use App\Entity\Font;
 use Doctrine\Persistence\ManagerRegistry;
+use Exception;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -22,9 +23,12 @@ class UpdateFontsCommand extends Command
 {
     private readonly AsciiSlugger $slugger;
 
+    private array $webfontVariants = [];
+
     public function __construct(
         private readonly HttpClientInterface $client,
-        private readonly ManagerRegistry $doctrine
+        private readonly ManagerRegistry $doctrine,
+        private readonly string $webfontApiKey,
     ) {
         parent::__construct();
 
@@ -47,13 +51,20 @@ class UpdateFontsCommand extends Command
         $response = $this->client->request('GET', 'https://fonts.google.com/metadata/fonts');
 
         if ($response->getStatusCode() !== 200) {
-            $io->error('Error while fetching fonts');
+            $io->error('Error while fetching fonts from Google Fonts API (metadata)');
             return Command::FAILURE;
         }
 
         $content = json_decode($response->getContent(), null, 512, JSON_THROW_ON_ERROR);
 
         $metadataFonts = $content->familyMetadataList;
+
+        try {
+            $this->webfontVariants = $this->webfontVariants();
+        } catch (\Throwable $th) {
+            $io->error($th->getMessage());
+            return Command::FAILURE;
+        }
 
         $io->info('Found ' . (is_countable($metadataFonts) ? count($metadataFonts) : 0) . ' fonts. Updating database...');
 
@@ -92,11 +103,48 @@ class UpdateFontsCommand extends Command
         return Command::SUCCESS;
     }
 
+    /**
+     * @throws Exception
+     */
+    private function webfontVariants(): array
+    {
+        $variants = [];
+
+        $response = $this->client->request('GET', "https://www.googleapis.com/webfonts/v1/webfonts?sort=popularity&key={$this->webfontApiKey}");
+
+        if ($response->getStatusCode() !== 200) {
+            throw new Exception('Error while fetching fonts from Google Fonts API (webfont)');
+        }
+
+        $content = json_decode($response->getContent(), null, 512, JSON_THROW_ON_ERROR);
+
+        $variants = [];
+
+        foreach ($content->items as $item) {
+            $variants[$item->family] = array_map(function ($v) {
+                if ($v === 'regular') {
+                    return '400';
+                } elseif ($v === 'italic') {
+                    return '400i';
+                } elseif (preg_match('/^(\d+)(italic)$/', $v, $matches)) {
+                    return $matches[1] . 'i';
+                }
+
+                return $v;
+            }, $item->variants);
+        }
+
+        return $variants;
+    }
+
     private function fillFont(Font &$font, $metadataFont)
     {
         $variants = [];
 
         foreach ($metadataFont->fonts as $k => $v) {
+            if (! in_array($k, $this->webfontVariants[$metadataFont->family], true)) {
+                continue;
+            }
             $variants[] = $k;
         }
 
@@ -107,7 +155,7 @@ class UpdateFontsCommand extends Command
         $font->setDisplayName($metadataFont->displayName ?? null);
         $font->setFamily($metadataFont->family);
         $font->setModifiedAt(new \DateTimeImmutable($metadataFont->lastModified));
-        $font->setSlug($this->slugger->slug($metadataFont->family));
+        $font->setSlug($this->slugger->slug($metadataFont->family)->toString());
         $font->setSubsets($metadataFont->subsets);
         $font->setVariants($variants);
         $font->setUpdatedAt(new \DateTimeImmutable());
