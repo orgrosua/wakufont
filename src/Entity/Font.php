@@ -69,6 +69,7 @@ class Font
     #[ORM\OneToMany(mappedBy: 'font', targetEntity: File::class, orphanRemoval: true)]
     private Collection $files;
 
+    #[Groups(['font:read'])]
     #[ORM\Column(length: 12, nullable: true)]
     private ?string $version = null;
 
