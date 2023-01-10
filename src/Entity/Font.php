@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Entity;
 
 use App\Repository\FontRepository;
@@ -66,6 +68,10 @@ class Font
 
     #[ORM\OneToMany(mappedBy: 'font', targetEntity: File::class, orphanRemoval: true)]
     private Collection $files;
+
+    #[Groups(['font:read'])]
+    #[ORM\Column(length: 12, nullable: true)]
+    private ?string $version = null;
 
     public function __construct()
     {
@@ -231,7 +237,7 @@ class Font
 
     public function addFile(File $file): self
     {
-        if (!$this->files->contains($file)) {
+        if (! $this->files->contains($file)) {
             $this->files->add($file);
             $file->setFont($this);
         }
@@ -254,6 +260,18 @@ class Font
     #[Groups(['font:read'])]
     public function getIsSupportVariable(): bool
     {
-        return !empty($this->getAxes()) && array_search('wght', array_column($this->getAxes(), 'tag')) !== false;
+        return ! empty($this->getAxes()) && array_search('wght', array_column($this->getAxes(), 'tag'), true) !== false;
+    }
+
+    public function getVersion(): ?string
+    {
+        return $this->version;
+    }
+
+    public function setVersion(string $version): self
+    {
+        $this->version = $version;
+
+        return $this;
     }
 }

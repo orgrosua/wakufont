@@ -32,8 +32,8 @@ final class Version20221024091915 extends AbstractMigration
         , variants CLOB NOT NULL --(DC2Type:array)
         , axes CLOB DEFAULT NULL --(DC2Type:json)
         , popularity SMALLINT NOT NULL)');
-        $this->addSql('CREATE TABLE _symfony_scheduler_tasks (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, task_name VARCHAR(255) NOT NULL, body CLOB NOT NULL)');
-        $this->addSql('CREATE INDEX _symfony_scheduler_tasks_name ON _symfony_scheduler_tasks (task_name)');
+        $this->addSql('CREATE TABLE IF NOT EXISTS _symfony_scheduler_tasks (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, task_name VARCHAR(255) NOT NULL, body CLOB NOT NULL)');
+        $this->addSql('CREATE INDEX IF NOT EXISTS _symfony_scheduler_tasks_name ON _symfony_scheduler_tasks (task_name)');
     }
 
     public function down(Schema $schema): void

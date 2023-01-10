@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Service;
 
 use App\Entity\Font;
@@ -10,7 +12,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 class GoogleFonts
 {
     public function __construct(
-        private HttpClientInterface $client
+        private readonly HttpClientInterface $client
     ) {
     }
 

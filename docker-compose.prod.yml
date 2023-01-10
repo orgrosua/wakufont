@@ -6,3 +6,5 @@ services:
     environment:
       APP_SECRET: ${APP_SECRET}
       SENTRY_DSN: ${SENTRY_DSN}
+      GOOGLE_FONTS_API_KEY: ${GOOGLE_FONTS_API_KEY}
+
