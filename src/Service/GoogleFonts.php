@@ -51,8 +51,8 @@ class GoogleFonts
     {
         $family = str_replace(' ', '+', $font->getFamily());
 
-        $axis_tag_list[] = ['ital'];
-        $axis_tuple_list[] = [sprintf('%d', $italic)];
+        $axis_tag_list = ['ital'];
+        $axis_tuple_list = [sprintf('%d', $italic)];
 
         foreach ($axes as $a) {
             $axis_tag_list[] = $a['tag'];
