@@ -260,7 +260,7 @@ class Font
     #[Groups(['font:read'])]
     public function getIsSupportVariable(): bool
     {
-        return ! empty($this->getAxes()) && array_search('wght', array_column($this->getAxes(), 'tag'), true) !== false;
+        return ! empty($this->getAxes());
     }
 
     public function getVersion(): ?string

@@ -47,17 +47,23 @@ class GoogleFonts
         return $fontUrl;
     }
 
-    public function fetchVariableFontFile(Font $font, int $italic, array $wghtAxes): array
+    public function fetchVariableFontFile(Font $font, int $italic, array $axes): array
     {
         $family = str_replace(' ', '+', $font->getFamily());
 
-        $weight = sprintf('%d..%d', intval($wghtAxes['min']), intval($wghtAxes['max']));
+        $axis_tag_list[] = ['ital'];
+        $axis_tuple_list[] = [sprintf('%d', $italic)];
+
+        foreach ($axes as $a) {
+            $axis_tag_list[] = $a['tag'];
+            $axis_tuple_list[] = sprintf('%d..%d', intval($a['min']), intval($a['max']));
+        }
 
         $url = sprintf(
-            'https://fonts.googleapis.com/css2?family=%s:ital,wght@%s,%s',
+            'https://fonts.googleapis.com/css2?family=%s:%s@%s',
             $family,
-            $italic,
-            $weight
+            implode(',', $axis_tag_list),
+            implode(',', $axis_tuple_list)
         );
 
         $response = $this->client->request('GET', $url, [

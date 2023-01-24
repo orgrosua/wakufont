@@ -138,8 +138,6 @@ class FontController extends AbstractController
         if ($font->getIsSupportVariable()) {
             $italics = [];
 
-            $wghtAxes = $font->getAxes()[array_search('wght', array_column($font->getAxes(), 'tag'), true)];
-
             if (count(array_filter($variantKeys, static fn (string $variantKey) => preg_replace('/\d/', '', $variantKey) === '')) > 0) {
                 array_push($italics, 0);
             }
@@ -161,7 +159,7 @@ class FontController extends AbstractController
                     && in_array($fontFile->getSubsets()[0], $subsets, true));
 
                 if ($filteredFontFilesVariable->count() < count($subsets)) {
-                    $fetchedVariableFonts = $googleFonts->fetchVariableFontFile($font, $italic, $wghtAxes);
+                    $fetchedVariableFonts = $googleFonts->fetchVariableFontFile($font, $italic, $font->getAxes());
 
                     foreach ($fetchedVariableFonts as $fetchedVariableFont) {
                         $existFilteredFontFilesVariable = $filteredFontFilesVariable->exists(static fn (int $k, File $fontFile) => $fontFile->getFormat() === FontFormat::WOFF2->value
