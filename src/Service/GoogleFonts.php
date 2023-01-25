@@ -56,7 +56,7 @@ class GoogleFonts
 
         foreach ($axes as $a) {
             $axis_tag_list[] = $a['tag'];
-            $axis_tuple_list[] = sprintf('%d..%d', intval($a['min']), intval($a['max']));
+            $axis_tuple_list[] = sprintf('%s..%s', $a['min'], $a['max']);
         }
 
         $url = sprintf(
