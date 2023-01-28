@@ -56,27 +56,22 @@ class GoogleFonts
         $axis_tuple_list = [];
         $family = str_replace(' ', '+', $font->getFamily());
 
-        $spec_axis_tag = ['ital', 'wdth', 'wght'];
-
         // add ital axis
         $axes[] = [
             'tag' => 'ital',
-            'default' => $italic,
+            'defaultValue' => $italic,
         ];
 
-        // sort axes by tag
-        usort($axes, static fn (array $a, array $b) => $a['tag'] <=> $b['tag']);
+        // sort axes by "tag" alphabetically (e.g. a,b,c,A,B,C)
+        usort($axes, static fn (array $a, array $b) => strcmp((string) $this->negative_case($a['tag']), (string) $this->negative_case($b['tag'])));
 
         foreach ($axes as $a) {
-            if (! in_array($a['tag'], $spec_axis_tag, true)) {
-                continue;
-            }
             $axis_tag_list[] = $a['tag'];
 
             if (array_key_exists('min', $a) && array_key_exists('max', $a)) {
                 $axis_tuple_list[] = sprintf('%s..%s', $a['min'], $a['max']);
             } else {
-                $axis_tuple_list[] = sprintf('%s', $a['default']);
+                $axis_tuple_list[] = sprintf('%s', $a['defaultValue']);
             }
         }
 
@@ -123,5 +118,16 @@ class GoogleFonts
         }
 
         return $parsedFiles;
+    }
+
+    private function negative_case(string $string): string
+    {
+        $arr = str_split($string);
+
+        foreach ($arr as $key => $char) {
+            $arr[$key] = ctype_upper($char) ? strtolower($char) : strtoupper($char);
+        }
+
+        return implode('', $arr);
     }
 }
