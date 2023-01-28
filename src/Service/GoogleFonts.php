@@ -47,16 +47,37 @@ class GoogleFonts
         return $fontUrl;
     }
 
+    /**
+     * @see https://developers.google.com/fonts/docs/css2#api_url_specification
+     */
     public function fetchVariableFontFile(Font $font, int $italic, array $axes): array
     {
+        $axis_tag_list = [];
+        $axis_tuple_list = [];
         $family = str_replace(' ', '+', $font->getFamily());
 
-        $axis_tag_list = ['ital'];
-        $axis_tuple_list = [sprintf('%d', $italic)];
+        $spec_axis_tag = ['ital', 'wdth', 'wght'];
+
+        // add ital axis
+        $axes[] = [
+            'tag' => 'ital',
+            'default' => $italic,
+        ];
+
+        // sort axes by tag
+        usort($axes, static fn (array $a, array $b) => $a['tag'] <=> $b['tag']);
 
         foreach ($axes as $a) {
+            if (! in_array($a['tag'], $spec_axis_tag, true)) {
+                continue;
+            }
             $axis_tag_list[] = $a['tag'];
-            $axis_tuple_list[] = sprintf('%s..%s', $a['min'], $a['max']);
+
+            if (array_key_exists('min', $a) && array_key_exists('max', $a)) {
+                $axis_tuple_list[] = sprintf('%s..%s', $a['min'], $a['max']);
+            } else {
+                $axis_tuple_list[] = sprintf('%s', $a['default']);
+            }
         }
 
         $url = sprintf(
