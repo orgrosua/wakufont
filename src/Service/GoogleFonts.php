@@ -63,7 +63,7 @@ class GoogleFonts
         ];
 
         // sort axes by "tag" alphabetically (e.g. a,b,c,A,B,C)
-        usort($axes, static fn (array $a, array $b) => strcmp((string) $this->negative_case($a['tag']), (string) $this->negative_case($b['tag'])));
+        usort($axes, fn (array $a, array $b) => strcmp((string) $this->negative_case($a['tag']), (string) $this->negative_case($b['tag'])));
 
         foreach ($axes as $a) {
             $axis_tag_list[] = $a['tag'];
