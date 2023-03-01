@@ -27,6 +27,7 @@ RUN apk add --no-cache \
 		gettext \
 		git \
 		nano \
+		woff2 \
 	;
 
 ARG EXT_APCU_VERSION=5.1.22
