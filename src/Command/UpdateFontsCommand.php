@@ -80,14 +80,22 @@ class UpdateFontsCommand extends Command
                 $io->writeln('Missing ❌');
                 $io->writeln('Creating new one...');
                 $font = new Font();
-                $this->fillFont($font, $metadataFont);
-                $entityManager->persist($font);
+                try {
+                    $this->fillFont($font, $metadataFont);
+                    $entityManager->persist($font);
+                } catch (\Throwable $th) {
+                    //throw $th;
+                }
             } else {
                 if ($font->getUpdatedAt() < new \DateTimeImmutable($metadataFont->lastModified)) {
                     $io->writeln('Found ⚠️');
-                    $this->fillFont($font, $metadataFont);
-                    // remove cached files
-                    $font->getFiles()->clear();
+                    try {
+                        $this->fillFont($font, $metadataFont);
+                        // remove cached files
+                        $font->getFiles()->clear();
+                    } catch (\Throwable $th) {
+                        //throw $th;
+                    }
                 } else {
                     $io->writeln('Found ✅');
                 }
