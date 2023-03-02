@@ -83,7 +83,7 @@ class UpdateFontsCommand extends Command
                 try {
                     $this->fillFont($font, $metadataFont);
                     $entityManager->persist($font);
-                } catch (\Throwable $th) {
+                } catch (\Throwable) {
                     //throw $th;
                 }
             } else {
@@ -93,7 +93,7 @@ class UpdateFontsCommand extends Command
                         $this->fillFont($font, $metadataFont);
                         // remove cached files
                         $font->getFiles()->clear();
-                    } catch (\Throwable $th) {
+                    } catch (\Throwable) {
                         //throw $th;
                     }
                 } else {

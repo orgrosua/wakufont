@@ -19,6 +19,9 @@ class ProxyController extends AbstractController
     {
         $url = $request->query->get('url');
 
+        /**
+         * TODO: use symfony validator component to validate url
+         */
         if (empty($url)) {
             return new JsonResponse([
                 'error' => 'url is empty',

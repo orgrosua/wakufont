@@ -22,14 +22,15 @@ class GoogleWoffTwoController extends AbstractController
         /** @var UploadedFile $uploadedFile */
         $uploadedFile = $request->files->get('file');
 
+        /**
+         * TODO: use symfony validator component to validate file
+         */
         if (! $uploadedFile) {
             return $this->json([
                 'status' => 'error',
                 'errors' => 'No file uploaded',
             ], Response::HTTP_BAD_REQUEST);
-        }
-
-        if (! str_contains($uploadedFile->getMimeType(), 'font') || $uploadedFile->getClientOriginalExtension() !== 'ttf') {
+        } elseif (! str_contains($uploadedFile->getMimeType(), 'font') || $uploadedFile->getClientOriginalExtension() !== 'ttf') {
             return $this->json([
                 'status' => 'error',
                 'errors' => 'The file is not a font file and/or not a ttf file',
@@ -50,12 +51,13 @@ class GoogleWoffTwoController extends AbstractController
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
-        $filename = $uploadedFile->getFilename() . '.woff2';
-        $compressedFile = $uploadedFile->getPath() . '/' . $filename;
+        $compressedFile = $uploadedFile->getPath() . '/' . $uploadedFile->getFilename() . '.woff2';
 
         $response = new StreamedResponse(function () use ($compressedFile) {
             readfile($compressedFile);
         });
+
+        $filename = pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME) . '.woff2';
 
         $response->headers->set('Content-Type', 'font/woff2');
         $response->headers->set('Content-Disposition', 'attachment; filename="' . $filename . '"');
