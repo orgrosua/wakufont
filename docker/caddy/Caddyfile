@@ -1,6 +1,6 @@
 {
-    # Debug
-    {$DEBUG}
+	# Debug
+	{$DEBUG}
 }
 
 {$SERVER_NAME}
