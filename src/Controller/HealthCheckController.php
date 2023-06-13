@@ -12,6 +12,11 @@ class HealthCheckController extends AbstractController
     #[Route('/ping', name: 'ping', methods: ['GET'])]
     public function ping(): JsonResponse
     {
-        return new JsonResponse('pong');
+        return new JsonResponse(
+            [
+                'status' => 'OK',
+                'message' => 'pong',
+            ]
+        );
     }
 }
