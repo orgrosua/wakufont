@@ -13,25 +13,26 @@
         "guikingone/scheduler-bundle": "^0.10.0",
         "nelmio/cors-bundle": "^2.2",
         "sabberworm/php-css-parser": "^8.4",
-        "sentry/sentry-symfony": "^4.4",
-        "symfony/console": "6.2.*",
-        "symfony/dotenv": "6.2.*",
+        "sentry/sentry-symfony": "^4.8",
+        "symfony/console": "6.3.*",
+        "symfony/dotenv": "6.3.*",
         "symfony/flex": "^2",
-        "symfony/framework-bundle": "6.2.*",
-        "symfony/http-client": "6.2.*",
-        "symfony/mime": "6.2.*",
-        "symfony/process": "6.2.*",
-        "symfony/proxy-manager-bridge": "6.2.*",
-        "symfony/runtime": "6.2.*",
-        "symfony/serializer": "6.2.*",
+        "symfony/framework-bundle": "6.3.*",
+        "symfony/http-client": "6.3.*",
+        "symfony/mime": "6.3.*",
+        "symfony/process": "6.3.*",
+        "symfony/proxy-manager-bridge": "6.3.*",
+        "symfony/runtime": "6.3.*",
+        "symfony/serializer": "6.3.*",
         "symfony/translation-contracts": "^3.1",
-        "symfony/yaml": "6.2.*"
+        "symfony/yaml": "6.3.*"
     },
     "config": {
         "allow-plugins": {
             "composer/package-versions-deprecated": true,
             "symfony/flex": true,
-            "symfony/runtime": true
+            "symfony/runtime": true,
+            "php-http/discovery": true
         },
         "optimize-autoloader": true,
         "preferred-install": {
@@ -95,13 +96,13 @@
     "extra": {
         "symfony": {
             "allow-contrib": false,
-            "require": "6.2.*"
+            "require": "6.3.*"
         }
     },
     "require-dev": {
         "rector/rector": "^0.15.2",
         "symfony/maker-bundle": "^1.47",
-        "symfony/stopwatch": "6.2.*",
+        "symfony/stopwatch": "6.3.*",
         "symplify/easy-coding-standard": "11.1.34.72"
     }
 }
