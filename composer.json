@@ -100,7 +100,7 @@
         }
     },
     "require-dev": {
-        "rector/rector": "^0.15.2",
+        "rector/rector": "^0.18.11",
         "symfony/maker-bundle": "^1.47",
         "symfony/stopwatch": "6.4.*",
         "symplify/easy-coding-standard": "11.1.34.72"
