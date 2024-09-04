@@ -111,7 +111,7 @@ class FontController extends AbstractController
                     return $fontFile->getFormat() === $fontFormat->value
                         && $fontFile->getWeight() === $weight
                         && $fontFile->getStyle() === $style
-                        && $fontFileSubsets === $subsets;
+                        && array_diff($fontFileSubsets, $subsets) === [];
                 });
 
                 if (! $isExistFontFilesVariant) {
@@ -191,10 +191,18 @@ class FontController extends AbstractController
             $fontFileSubsets = array_unique($fontFile->getSubsets());
             sort($fontFileSubsets);
 
+            $variableNumberedSubsets = false;
+
             if ($fontFile->getWeight() === 0) {
-                return in_array($fontFile->getSubsets()[0], $subsets, true);
+                foreach ($fontFile->getSubsets() as $ffSubset) {
+                    if (preg_match('/\d/', $ffSubset)) {
+                        $variableNumberedSubsets = true;
+                        break;
+                    }
+                }
             }
-            return $fontFileSubsets === $subsets;
+
+            return $fontFileSubsets === $subsets || $variableNumberedSubsets;
         });
 
         $response = $this->json([
