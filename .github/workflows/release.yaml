@@ -1,0 +1,55 @@
+name: "Update google webfont data"
+
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 * * 0" # Every Sunday at midnight UTC
+
+jobs:
+  update-webfont-data:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.ORG_DEV_PAT }}
+
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x # Run with latest stable Deno.
+          cache: true
+
+      - name: Install dependencies
+        run: deno Install
+
+      - name: Update webfont data
+        run: deno run -A main.ts
+        env:
+          GOOGLE_FONTS_API_KEY: ${{ secrets.GOOGLE_FONTS_API_KEY }}
+
+      # commit changes
+      - name: Commit changes
+        run: |
+          git config --global user.name 'github-actions'
+          git config --global user.email 'wakufont@users.noreply.github.com'
+          git add .
+          git commit -m "Update webfont data"
+
+      # bump the tag version (minor version bump) and create a tag
+      - name: Bump version and create tag
+        run: |
+          git fetch --tags
+          VERSION=$(git describe --tags --abbrev=0)
+          NEW_VERSION=$(echo $VERSION | awk -F. -v OFS=. '{$2++;print}')
+          git tag $NEW_VERSION
+          echo "New version: $NEW_VERSION"
+
+      # push changes and all tag
+      - name: Push changes
+        run: |
+          git push origin HEAD
+          git push origin --tags
